@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Career Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">Career<span>Guide</span></div>
+
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="careers.html">Careers</a>
+        <a href="skills.html">Skills</a>
+        <a href="test.html">Career Test</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</nav>
+
+<section class="test-section">
+
+    <p class="tag">🎯 FIND YOUR DIRECTION</p>
+
+    <h1 class="page-title">Career Suggestion Test</h1>
+
+    <p class="subtitle">
+        Answer a few questions and explore a suitable career direction.
+    </p>
+
+    <div class="test-box">
+
+        <input type="text" id="name" placeholder="Enter your name">
+
+        <select id="interest">
+            <option value="">What interests you?</option>
+            <option value="technology">Technology & Computers</option>
+            <option value="government">Government Services</option>
+            <option value="medical">Medical & Healthcare</option>
+            <option value="business">Business & Management</option>
+            <option value="creative">Creative Work</option>
+        </select>
+
+        <select id="strength">
+            <option value="">What is your strongest skill?</option>
+            <option value="coding">Coding</option>
+            <option value="communication">Communication</option>
+            <option value="problem">Problem Solving</option>
+            <option value="leadership">Leadership</option>
+            <option value="creativity">Creativity</option>
+        </select>
+
+        <button onclick="getSuggestion()">Get My Career Suggestion ✨</button>
+
+        <div id="result"></div>
+
+    </div>
+
+</section>
+
+<footer>
+    <p>© 2026 Career Orientation Of Youth</p>
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
