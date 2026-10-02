@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake and Ladder</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#74b9ff,#a29bfe);min-height:100vh}
+.page{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+.page.show{display:flex}
+.card{background:white;border-radius:25px;padding:35px;width:95%;max-width:650px;text-align:center;box-shadow:0 15px 40px #0004}
+h1{color:#5f27cd;font-size:42px;margin:10px}
+h2{margin:12px 0}
+p{color:#555;font-size:18px}
+button{background:#5f27cd;color:white;border:0;padding:14px 28px;border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer;margin-top:15px}
+button:hover{background:#341f97}
+input{width:100%;padding:13px;margin:7px 0 15px;border:2px solid #ddd;border-radius:10px;font-size:16px}
+label{display:block;text-align:left;font-weight:bold}
+.form{text-align:left;background:#f4f1ff;padding:20px;border-radius:15px;margin:15px 0}
+#game{flex-direction:column;justify-content:flex-start}
+.game-wrap{display:flex;gap:25px;width:100%;max-width:1200px;justify-content:center;align-items:flex-start}
+.board{width:min(650px,90vw);height:min(650px,90vw);display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);background:white;border:4px solid #222}
+.cell{border:1px solid #555;display:flex;align-items:center;justify-content:center;font-weight:bold;position:relative}
+.snake{background:#ffcaca}.ladder{background:#c9f7d5}
+.mark{position:absolute;right:2px;top:1px}
+.token{position:absolute;bottom:2px;width:25px;height:25px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;border:2px solid white;font-size:11px}
+.t1{background:#0984e3;left:20%}.t2{background:#e84393;left:60%}
+.panel{background:white;border-radius:20px;padding:25px;width:300px}
+.turn{background:#5f27cd;color:white;padding:15px;border-radius:12px;text-align:center}
+.dice{text-align:center;font-size:65px;margin:15px}
+.roll{width:100%;background:#00b894}
+.info{background:#f5f5f5;padding:12px;border-radius:10px;margin-top:8px}
+.msg{background:#ffeaa7;padding:12px;border-radius:10px;margin-top:12px;text-align:center}
+.history{max-height:180px;overflow:auto;margin-top:15px;text-align:left;font-size:13px}
+.history div{padding:6px;border-bottom:1px solid #ddd}
+.trophy{font-size:85px}
+.winner{font-size:32px;color:#5f27cd;font-weight:bold;margin:20px}
+@media(max-width:900px){.game-wrap{flex-direction:column;align-items:center}.panel{width:min(650px,90vw)}}
+</style>
+</head>
+<body>
+
+<section id="home" class="page show">
+<div class="card">
+<div style="font-size:80px">🐍 🪜</div>
+<h1>Snake and Ladder</h1>
+<h2>🎲 Welcome to the Game</h2>
+<p>Roll the dice, climb ladders and avoid snakes!</p>
+<button onclick="go('signin')">START GAME</button>
+</div>
+</section>
+
+<section id="signin" class="page">
+<div class="card">
+<h1>🔐 Player Sign In</h1>
+<div class="form">
+<label>Player 1 Name</label>
+<input id="p1" placeholder="Enter Player 1 name">
+</div>
+<div class="form">
+<label>Player 2 Name</label>
+<input id="p2" placeholder="Enter Player 2 name">
+<label>Player 2 Contact No.</label>
+<input id="contact" type="tel" maxlength="10" placeholder="10 digit contact number">
+</div>
+<button onclick="startGame()">START GAME</button>
+</div>
+</section>
+
+<section id="game" class="page">
+<h1 style="color:white">🐍 Snake & Ladder 🪜</h1>
+<div class="game-wrap">
+<div id="board" class="board"></div>
+<div class="panel">
+<div class="turn">CURRENT TURN<h2 id="turn"></h2></div>
+<div id="dice" class="dice">⚀</div>
+<button class="roll" onclick="roll()">🎲 ROLL DICE</button>
+<div id="msg" class="msg">Game started!</div>
+<h2>Players</h2>
+<div id="i1" class="info"></div>
+<div id="i2" class="info"></div>
+<h2>History</h2>
+<div id="history" class="history"></div>
+</div>
+</div>
+</section>
+
+<section id="win" class="page">
+<div class="card">
+<div class="trophy">🏆</div>
+<h1>Congratulations!</h1>
+<div id="winner" class="winner"></div>
+<p>Points: <b id="points">100</b></p>
+<p>Total Moves: <b id="moves">0</b></p>
+<button onclick="newGame()">START NEW GAME</button>
+</div>
+</section>
+
+<script>
+var players=[{name:"",pos:1},{name:"",pos:1}];
+var turnIndex=0;
+var moves=0;
+
+var snakes={99:54,95:72,92:51,89:68,74:53,64:36,62:19,49:11,47:26,34:7,27:5};
+var ladders={4:25,9:31,20:38,21:42,28:84,40:59,51:67,63:81,71:91,80:100};
+
+function go(id){
+  document.querySelectorAll(".page").forEach(function(x){x.classList.remove("show")});
+  document.getElementById(id).classList.add("show");
+}
+
+function startGame(){
+  var a=document.getElementById("p1").value.trim();
+  var b=document.getElementById("p2").value.trim();
+  var c=document.getElementById("contact").value.trim();
+
+  if(a===""){alert("Enter Player 1 name");return}
+  if(b===""){alert("Enter Player 2 name");return}
+  if(!/^[0-9]{10}$/.test(c)){alert("Enter valid 10 digit contact number");return}
+
+  players[0].name=a;
+  players[1].name=b;
+  players[0].pos=1;
+  players[1].pos=1;
+  turnIndex=0;
+  moves=0;
+
+  makeBoard();
+  update();
+  document.getElementById("history").innerHTML="";
+  go("game");
+}
+
+function makeBoard(){
+  var board=document.getElementById("board");
+  board.innerHTML="";
+  for(var n=100;n>=1;n--){
+    var cell=document.createElement("div");
+    cell.className="cell";
+    cell.id="c"+n;
+    cell.appendChild(document.createTextNode(n));
+
+    if(snakes[n]){
+      cell.classList.add("snake");
+      var s=document.createElement("span");
+      s.className="mark";s.textContent="🐍";cell.appendChild(s);
+    }
+    if(ladders[n]){
+      cell.classList.add("ladder");
+      var l=document.createElement("span");
+      l.className="mark";l.textContent="🪜";cell.appendChild(l);
+    }
+    board.appendChild(cell);
+  }
+  tokens();
+}
+
+function tokens(){
+  document.querySelectorAll(".token").forEach(function(x){x.remove()});
+  players.forEach(function(p,i){
+    var cell=document.getElementById("c"+p.pos);
+    if(!cell)return;
+    var t=document.createElement("div");
+    t.className="token "+(i===0?"t1":"t2");
+    t.textContent=i+1;
+    cell.appendChild(t);
+  });
+}
+
+function update(){
+  document.getElementById("turn").textContent=players[turnIndex].name;
+  document.getElementById("i1").textContent="🔵 "+players[0].name+" : Position "+players[0].pos;
+  document.getElementById("i2").textContent="🔴 "+players[1].name+" : Position "+players[1].pos;
+  tokens();
+}
+
+function addHistory(t){
+  var h=document.getElementById("history");
+  var d=document.createElement("div");
+  d.textContent="🎲 "+t;
+  h.prepend(d);
+}
+
+function roll(){
+  var d=Math.floor(Math.random()*6)+1;
+  var faces=["⚀","⚁","⚂","⚃","⚄","⚅"];
+  document.getElementById("dice").textContent=faces[d-1];
+  moves++;
+
+  var p=players[turnIndex];
+  var old=p.pos;
+  var next=old+d;
+
+  if(next>100){
+    document.getElementById("msg").textContent=p.name+" needs exact number to reach 100.";
+    addHistory(p.name+" rolled "+d+" and stayed at "+old);
+  }else{
+    p.pos=next;
+    addHistory(p.name+" moved "+old+" → "+next);
+
+    if(snakes[p.pos]){
+      var from=p.pos,to=snakes[p.pos];
+      p.pos=to;
+      document.getElementById("msg").textContent="🐍 Snake! "+from+" → "+to;
+      addHistory("Snake: "+from+" → "+to);
+    }else if(ladders[p.pos]){
+      var lf=p.pos,lt=ladders[p.pos];
+      p.pos=lt;
+      document.getElementById("msg").textContent="🪜 Ladder! "+lf+" → "+lt;
+      addHistory("Ladder: "+lf+" → "+lt);
+    }
+  }
+
+  update();
+
+  if(p.pos===100){
+    document.getElementById("winner").textContent=p.name+" is the Winner!";
+    document.getElementById("moves").textContent=moves;
+    go("win");
+    return;
+  }
+
+  turnIndex=turnIndex===0?1:0;
+  update();
+}
+
+function newGame(){
+  players[0].pos=1;
+  players[1].pos=1;
+  turnIndex=0;
+  moves=0;
+  document.getElementById("dice").textContent="⚀";
+  document.getElementById("msg").textContent="New game started!";
+  document.getElementById("history").innerHTML="";
+  makeBoard();
+  update();
+  go("game");
+}
+</script>
+</body>
+</html>
